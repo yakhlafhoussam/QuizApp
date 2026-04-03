@@ -20,6 +20,7 @@ const goHome = () => {
   <div class="page">
     <div class="card">
       <h1 v-if="status === 'win'" class="win-title">YOU WIN !!</h1>
+      <h1 v-else-if="status === 'timeout'" class="timeout-title">GAME OVER</h1>
       <h1 v-else class="lose-title">GAME OVER</h1>
 
       <p class="score-text">Total Score: <strong>{{ totalScore }}</strong></p>
@@ -31,6 +32,12 @@ const goHome = () => {
         <p class="details-text">
           Level score: <strong>{{ levelScore }}</strong> / Required:
           <strong>{{ requiredScore }}</strong>
+        </p>
+      </template>
+
+      <template v-else-if="status === 'timeout'">
+        <p class="details-text">
+          Time is over before completing all levels.
         </p>
       </template>
 
@@ -75,6 +82,12 @@ const goHome = () => {
   margin-bottom: 18px;
   font-size: 38px;
   color: #ef4444;
+}
+
+.timeout-title {
+  margin-bottom: 18px;
+  font-size: 38px;
+  color: #f59e0b;
 }
 
 .score-text {

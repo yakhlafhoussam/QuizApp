@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import allQuestions from '../data/questions.json'
 import type { Question } from '../types/quiz'
@@ -8,11 +8,16 @@ const router = useRouter()
 
 const allQuizQuestions = allQuestions as Question[]
 
+const STORAGE_KEY = 'quiz_app_state'
+
 const currentLevel = ref(1)
 const currentQuestionIndex = ref(0)
 const totalScore = ref(0)
 const levelScore = ref(0)
 const selectedAnswer = ref<string | null>(null)
+
+const timeLeft = ref(300)
+let timer: number | null = null
 
 const passingScores: Record<number, number> = {
   1: 40,
@@ -31,6 +36,67 @@ const progress = computed(() => {
   return ((currentQuestionIndex.value + 1) / levelQuestions.value.length) * 100
 })
 
+const formattedTime = computed(() => {
+  const minutes = Math.floor(timeLeft.value / 60)
+  const seconds = timeLeft.value % 60
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`
+})
+
+const saveState = () => {
+  const quizState = {
+    currentLevel: currentLevel.value,
+    currentQuestionIndex: currentQuestionIndex.value,
+    totalScore: totalScore.value,
+    levelScore: levelScore.value,
+    timeLeft: timeLeft.value,
+  }
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(quizState))
+}
+
+const loadState = () => {
+  const savedState = localStorage.getItem(STORAGE_KEY)
+
+  if (!savedState) return
+
+  const parsedState = JSON.parse(savedState)
+
+  currentLevel.value = parsedState.currentLevel ?? 1
+  currentQuestionIndex.value = parsedState.currentQuestionIndex ?? 0
+  totalScore.value = parsedState.totalScore ?? 0
+  levelScore.value = parsedState.levelScore ?? 0
+  timeLeft.value = parsedState.timeLeft ?? 300
+}
+
+const clearState = () => {
+  localStorage.removeItem(STORAGE_KEY)
+}
+
+const startTimer = () => {
+  timer = window.setInterval(() => {
+    if (timeLeft.value > 0) {
+      timeLeft.value--
+    } else {
+      stopTimer()
+      clearState()
+      router.push({
+        path: '/result',
+        query: {
+          status: 'timeout',
+          totalScore: totalScore.value.toString(),
+        },
+      })
+    }
+  }, 1000)
+}
+
+const stopTimer = () => {
+  if (timer !== null) {
+    clearInterval(timer)
+    timer = null
+  }
+}
+
 const selectAnswer = (choice: string) => {
   selectedAnswer.value = choice
 }
@@ -39,6 +105,8 @@ const finishLevel = () => {
   const requiredScore = passingScores[currentLevel.value]
 
   if (levelScore.value < requiredScore) {
+    stopTimer()
+    clearState()
     router.push({
       path: '/result',
       query: {
@@ -53,6 +121,8 @@ const finishLevel = () => {
   }
 
   if (currentLevel.value === 3) {
+    stopTimer()
+    clearState()
     router.push({
       path: '/result',
       query: {
@@ -86,8 +156,27 @@ const nextQuestion = () => {
 }
 
 const goHome = () => {
+  stopTimer()
+  clearState()
   router.push('/')
 }
+
+watch(
+  [currentLevel, currentQuestionIndex, totalScore, levelScore, timeLeft],
+  () => {
+    saveState()
+  },
+  { deep: true }
+)
+
+onMounted(() => {
+  loadState()
+  startTimer()
+})
+
+onBeforeUnmount(() => {
+  stopTimer()
+})
 </script>
 
 <template>
@@ -105,6 +194,7 @@ const goHome = () => {
         <div class="score-wrapper">
           <div class="score-box">Total Score: {{ totalScore }}</div>
           <div class="score-box">Level Score: {{ levelScore }}</div>
+          <div class="time-box">Time Left: {{ formattedTime }}</div>
         </div>
       </div>
 
@@ -181,11 +271,16 @@ const goHome = () => {
   flex-wrap: wrap;
 }
 
-.score-box {
+.score-box,
+.time-box {
   background: #1e293b;
   padding: 12px 18px;
   border-radius: 12px;
   font-weight: bold;
+}
+
+.time-box {
+  color: #fca5a5;
 }
 
 .progress-wrapper {

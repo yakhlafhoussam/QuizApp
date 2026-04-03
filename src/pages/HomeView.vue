@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 
 const startQuiz = () => {
+  localStorage.removeItem('quiz_app_state')
   router.push('/quiz')
 }
 </script>
