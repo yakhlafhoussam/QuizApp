@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import winSoundFile from '../assets/sounds/win.mp3'
+import gameOverSoundFile from '../assets/sounds/gameover.mp3'
 
 const router = useRouter()
 const route = useRoute()
@@ -11,10 +13,27 @@ const level = computed(() => Number(route.query.level || 1))
 const levelScore = computed(() => Number(route.query.levelScore || 0))
 const requiredScore = computed(() => Number(route.query.requiredScore || 0))
 
+const winAudio = new Audio(winSoundFile)
+const gameOverAudio = new Audio(gameOverSoundFile)
+
+const playResultSound = () => {
+  if (status.value === 'win') {
+    winAudio.currentTime = 0
+    winAudio.play().catch(() => {})
+  } else {
+    gameOverAudio.currentTime = 0
+    gameOverAudio.play().catch(() => {})
+  }
+}
+
 const goHome = () => {
   localStorage.removeItem('quiz_app_state')
   router.push('/')
 }
+
+onMounted(() => {
+  playResultSound()
+})
 </script>
 
 <template>
