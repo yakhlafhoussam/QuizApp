@@ -240,28 +240,47 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="page">
+    <!-- Mario Cloud Decorations -->
+    <div class="cloud cloud-1"></div>
+    <div class="cloud cloud-2"></div>
+    <div class="cloud cloud-3"></div>
+    
     <div class="quiz-container">
       <div class="top-bar">
         <div>
-          <h1>Level {{ currentLevel }}</h1>
-          <p>Question {{ currentQuestionIndex + 1 }} / {{ levelQuestions.length }}</p>
+          <div class="level-badge">
+            <span class="level-icon">⭐</span>
+            <h1>WORLD {{ currentLevel }}-{{ currentQuestionIndex + 1 }}</h1>
+          </div>
+          <p class="question-counter">
+            Question {{ currentQuestionIndex + 1 }} / {{ levelQuestions.length }}
+          </p>
           <p class="level-rule">
-            Required score for this level: {{ passingScores[currentLevel] }}/100
+            🌟 Required: {{ passingScores[currentLevel] }}/100 🌟
           </p>
         </div>
 
         <div class="score-wrapper">
-          <div class="score-box">Total Score: {{ totalScore }}</div>
-          <div class="score-box">Level Score: {{ levelScore }}</div>
-          <div class="time-box">Time Left: {{ formattedTime }}</div>
+          <div class="score-box coin-box">
+            <span class="coin-icon">🪙</span> {{ totalScore }}
+          </div>
+          <div class="score-box star-box">
+            <span class="star-icon">⭐</span> {{ levelScore }}
+          </div>
+          <div class="time-box">
+            <span class="clock-icon">⏰</span> {{ formattedTime }}
+          </div>
         </div>
       </div>
 
       <div class="progress-wrapper">
-        <div class="progress-bar" :style="{ width: `${progress}%` }"></div>
+        <div class="progress-fill" :style="{ width: `${progress}%` }">
+          <div class="progress-star"></div>
+        </div>
       </div>
 
       <div v-if="currentQuestion" class="question-card">
+        <div class="question-block-icon">?</div>
         <h2>{{ currentQuestion.question }}</h2>
 
         <div class="choices">
@@ -272,38 +291,153 @@ onBeforeUnmount(() => {
             :disabled="answered"
             :class="['choice-btn', getChoiceClass(choice)]"
           >
+            <span class="choice-mushroom" v-if="!answered && !getChoiceClass(choice)">🍄</span>
+            <span class="choice-mushroom" v-else-if="getChoiceClass(choice) === 'correct'">⭐</span>
+            <span class="choice-mushroom" v-else-if="getChoiceClass(choice) === 'wrong'">💀</span>
+            <span class="choice-mushroom" v-else>❓</span>
             {{ choice }}
           </button>
         </div>
 
-        <p v-if="answered && isCorrect" class="feedback success-text">
-          Correct answer!
-        </p>
-
-        <p v-if="answered && isCorrect === false" class="feedback error-text">
-          Wrong answer. Correct answer: {{ currentQuestion.correct_answer }}
-        </p>
+        <div v-if="answered" class="feedback">
+          <div v-if="isCorrect" class="success-card">
+            <span class="success-icon">🎉</span>
+            <p class="success-text">CORRECT! +20 coins 🪙</p>
+          </div>
+          <div v-else class="error-card">
+            <span class="error-icon">😭</span>
+            <p class="error-text">
+              WRONG! The answer is: {{ currentQuestion.correct_answer }}
+            </p>
+          </div>
+        </div>
 
         <div class="actions">
-          <button class="secondary" @click="goHome">Back Home</button>
+          <button class="home-btn" @click="goHome">
+            <span>🏠</span> EXIT WORLD
+          </button>
         </div>
       </div>
     </div>
+
+    <!-- Bush decorations -->
+    <div class="bush bush-1"></div>
+    <div class="bush bush-2"></div>
   </div>
 </template>
 
 <style scoped>
 .page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #020617, #0f172a);
+  background: linear-gradient(180deg, #6EC3E8 0%, #4A9FC9 50%, #3B8BB3 100%);
   color: white;
   padding: 24px;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Clouds */
+.cloud {
+  position: absolute;
+  background: white;
+  border-radius: 100px;
+  opacity: 0.9;
+  z-index: 0;
+}
+
+.cloud::before,
+.cloud::after {
+  content: '';
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+}
+
+.cloud::before {
+  width: 60px;
+  height: 60px;
+  top: -30px;
+  left: 20px;
+}
+
+.cloud::after {
+  width: 80px;
+  height: 80px;
+  top: -40px;
+  left: 60px;
+}
+
+.cloud-1 {
+  width: 120px;
+  height: 60px;
+  top: 30px;
+  left: 5%;
+}
+
+.cloud-2 {
+  width: 150px;
+  height: 70px;
+  top: 150px;
+  right: 5%;
+}
+
+.cloud-3 {
+  width: 100px;
+  height: 50px;
+  bottom: 200px;
+  left: 10%;
+}
+
+/* Bushes */
+.bush {
+  position: absolute;
+  bottom: 0;
+  width: 120px;
+  height: 60px;
+  background: #2D8B3E;
+  border-radius: 80px 80px 40px 40px;
+  box-shadow: 0 5px 0 #1B5E2A;
+  z-index: 0;
+}
+
+.bush::before {
+  content: '';
+  position: absolute;
+  width: 60px;
+  height: 50px;
+  background: #2D8B3E;
+  border-radius: 50%;
+  left: -20px;
+  bottom: 0;
+  box-shadow: 0 5px 0 #1B5E2A;
+}
+
+.bush::after {
+  content: '';
+  position: absolute;
+  width: 60px;
+  height: 50px;
+  background: #2D8B3E;
+  border-radius: 50%;
+  right: -20px;
+  bottom: 0;
+  box-shadow: 0 5px 0 #1B5E2A;
+}
+
+.bush-1 {
+  left: 0;
+}
+
+.bush-2 {
+  right: 0;
 }
 
 .quiz-container {
   max-width: 900px;
   margin: 0 auto;
   padding-top: 40px;
+  position: relative;
+  z-index: 1;
 }
 
 .top-bar {
@@ -315,19 +449,42 @@ onBeforeUnmount(() => {
   flex-wrap: wrap;
 }
 
-.top-bar h1 {
-  font-size: 32px;
-  margin-bottom: 8px;
+.level-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 10px 20px;
+  border-radius: 20px;
+  border-left: 4px solid #FFD700;
 }
 
-.top-bar p {
-  color: #cbd5e1;
-  margin-bottom: 6px;
+.level-icon {
+  font-size: 28px;
+}
+
+.top-bar h1 {
+  font-size: 28px;
+  margin-bottom: 8px;
+  text-shadow: 2px 2px 0 #E52525;
+  color: #FFD700;
+}
+
+.question-counter {
+  color: #FFF;
+  font-weight: bold;
+  margin-top: 8px;
+  text-shadow: 1px 1px 0 #000;
 }
 
 .level-rule {
-  color: #93c5fd;
-  font-weight: 600;
+  color: #FFD700;
+  font-weight: bold;
+  background: rgba(0, 0, 0, 0.5);
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 15px;
+  margin-top: 5px;
 }
 
 .score-wrapper {
@@ -338,42 +495,92 @@ onBeforeUnmount(() => {
 
 .score-box,
 .time-box {
-  background: #1e293b;
+  background: rgba(0, 0, 0, 0.7);
   padding: 12px 18px;
   border-radius: 12px;
   font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 2px solid #FFD700;
+}
+
+.coin-box {
+  color: #FFD700;
+}
+
+.star-box {
+  color: #FFD700;
 }
 
 .time-box {
-  color: #fca5a5;
+  color: #FF6B6B;
+}
+
+.coin-icon, .star-icon, .clock-icon {
+  font-size: 20px;
 }
 
 .progress-wrapper {
   width: 100%;
-  height: 12px;
-  background: #1e293b;
-  border-radius: 999px;
+  height: 20px;
+  background: #5A3E1B;
+  border-radius: 10px;
   overflow: hidden;
   margin-bottom: 24px;
+  border: 2px solid #FFD700;
+  position: relative;
 }
 
-.progress-bar {
+.progress-fill {
   height: 100%;
-  background: #22c55e;
+  background: linear-gradient(90deg, #FFD700 0%, #FFA500 100%);
   transition: width 0.3s ease;
+  position: relative;
+}
+
+.progress-star {
+  position: absolute;
+  right: 0;
+  top: -10px;
+  width: 30px;
+  height: 30px;
+  background: #FFD700;
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
 }
 
 .question-card {
-  background: #1e293b;
+  background: rgba(0, 0, 0, 0.8);
   border-radius: 20px;
   padding: 28px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  border: 3px solid #FFD700;
+  position: relative;
+}
+
+.question-block-icon {
+  position: absolute;
+  top: -25px;
+  left: 20px;
+  width: 50px;
+  height: 50px;
+  background: #D4A017;
+  border: 3px solid #B8860B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: bold;
+  color: #B8860B;
+  box-shadow: 0 5px 0 #8B6914;
 }
 
 .question-card h2 {
   font-size: 28px;
   margin-bottom: 24px;
   line-height: 1.4;
+  color: #FFD700;
+  margin-top: 10px;
 }
 
 .choices {
@@ -388,46 +595,84 @@ onBeforeUnmount(() => {
   padding: 16px;
   border: none;
   border-radius: 14px;
-  background: #334155;
+  background: linear-gradient(135deg, #E52525 0%, #B01717 100%);
   color: white;
   cursor: pointer;
   font-size: 16px;
   transition: 0.25s;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 2px solid #FFD700;
 }
 
-.choice-btn:hover {
-  background: #475569;
+.choice-mushroom {
+  font-size: 20px;
+}
+
+.choice-btn:hover:not(:disabled) {
+  transform: translateX(10px);
+  background: linear-gradient(135deg, #FF4444 0%, #CC0000 100%);
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
 }
 
 .choice-btn.selected {
-  background: #2563eb;
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
 }
 
 .choice-btn.correct {
-  background: #16a34a;
+  background: linear-gradient(135deg, #16a34a 0%, #0f7a3a 100%);
+  border-color: #FFD700;
 }
 
 .choice-btn.wrong {
-  background: #dc2626;
+  background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+  text-decoration: line-through;
 }
 
 .choice-btn.disabled {
-  background: #475569;
   opacity: 0.7;
+  cursor: not-allowed;
 }
 
 .feedback {
   margin-bottom: 20px;
-  font-size: 16px;
-  font-weight: 600;
+}
+
+.success-card, .error-card {
+  padding: 15px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  animation: slideIn 0.5s ease;
+}
+
+.success-card {
+  background: rgba(22, 163, 74, 0.3);
+  border: 2px solid #4ade80;
+}
+
+.error-card {
+  background: rgba(220, 38, 38, 0.3);
+  border: 2px solid #f87171;
+}
+
+.success-icon, .error-icon {
+  font-size: 32px;
 }
 
 .success-text {
   color: #4ade80;
+  font-weight: bold;
+  margin: 0;
 }
 
 .error-text {
   color: #f87171;
+  font-weight: bold;
+  margin: 0;
 }
 
 .actions {
@@ -437,17 +682,34 @@ onBeforeUnmount(() => {
   flex-wrap: wrap;
 }
 
-.secondary {
+.home-btn {
   border: none;
   padding: 12px 22px;
   border-radius: 12px;
   cursor: pointer;
   font-size: 16px;
-  background: #475569;
+  background: linear-gradient(135deg, #475569 0%, #334155 100%);
   color: white;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: 0.25s;
 }
 
-.secondary:hover {
-  background: #334155;
+.home-btn:hover {
+  background: linear-gradient(135deg, #5a6a7e 0%, #3a4a5e 100%);
+  transform: translateY(-2px);
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 </style>
