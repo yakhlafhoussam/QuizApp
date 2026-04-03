@@ -16,8 +16,12 @@ const totalScore = ref(0)
 const levelScore = ref(0)
 const selectedAnswer = ref<string | null>(null)
 
+const answered = ref(false)
+const isCorrect = ref<boolean | null>(null)
+
 const timeLeft = ref(300)
 let timer: number | null = null
+let nextQuestionTimeout: number | null = null
 
 const passingScores: Record<number, number> = {
   1: 40,
@@ -97,8 +101,10 @@ const stopTimer = () => {
   }
 }
 
-const selectAnswer = (choice: string) => {
-  selectedAnswer.value = choice
+const resetAnswerState = () => {
+  selectedAnswer.value = null
+  answered.value = false
+  isCorrect.value = null
 }
 
 const finishLevel = () => {
@@ -136,27 +142,61 @@ const finishLevel = () => {
   currentLevel.value++
   currentQuestionIndex.value = 0
   levelScore.value = 0
-  selectedAnswer.value = null
+  resetAnswerState()
 }
 
-const nextQuestion = () => {
-  if (!selectedAnswer.value || !currentQuestion.value) return
-
-  if (selectedAnswer.value === currentQuestion.value.correct_answer) {
-    totalScore.value += 20
-    levelScore.value += 20
-  }
-
+const goToNextStep = () => {
   if (currentQuestionIndex.value < levelQuestions.value.length - 1) {
     currentQuestionIndex.value++
-    selectedAnswer.value = null
+    resetAnswerState()
   } else {
     finishLevel()
   }
 }
 
+const selectAnswer = (choice: string) => {
+  if (answered.value || !currentQuestion.value) return
+
+  selectedAnswer.value = choice
+  answered.value = true
+
+  const correct = choice === currentQuestion.value.correct_answer
+  isCorrect.value = correct
+
+  if (correct) {
+    totalScore.value += 20
+    levelScore.value += 20
+  }
+
+  nextQuestionTimeout = window.setTimeout(() => {
+    goToNextStep()
+  }, 1000)
+}
+
+const getChoiceClass = (choice: string) => {
+  if (!answered.value || !currentQuestion.value) {
+    return selectedAnswer.value === choice ? 'selected' : ''
+  }
+
+  if (choice === currentQuestion.value.correct_answer) {
+    return 'correct'
+  }
+
+  if (choice === selectedAnswer.value && choice !== currentQuestion.value.correct_answer) {
+    return 'wrong'
+  }
+
+  return 'disabled'
+}
+
 const goHome = () => {
   stopTimer()
+
+  if (nextQuestionTimeout !== null) {
+    clearTimeout(nextQuestionTimeout)
+    nextQuestionTimeout = null
+  }
+
   clearState()
   router.push('/')
 }
@@ -176,6 +216,11 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   stopTimer()
+
+  if (nextQuestionTimeout !== null) {
+    clearTimeout(nextQuestionTimeout)
+    nextQuestionTimeout = null
+  }
 })
 </script>
 
@@ -210,17 +255,23 @@ onBeforeUnmount(() => {
             v-for="choice in currentQuestion.choices"
             :key="choice"
             @click="selectAnswer(choice)"
-            :class="['choice-btn', selectedAnswer === choice ? 'selected' : '']"
+            :disabled="answered"
+            :class="['choice-btn', getChoiceClass(choice)]"
           >
             {{ choice }}
           </button>
         </div>
 
+        <p v-if="answered && isCorrect" class="feedback success-text">
+          Correct answer!
+        </p>
+
+        <p v-if="answered && isCorrect === false" class="feedback error-text">
+          Wrong answer. Correct answer: {{ currentQuestion.correct_answer }}
+        </p>
+
         <div class="actions">
           <button class="secondary" @click="goHome">Back Home</button>
-          <button class="primary" @click="nextQuestion" :disabled="!selectedAnswer">
-            {{ currentQuestionIndex === levelQuestions.length - 1 ? 'Finish Level' : 'Next' }}
-          </button>
         </div>
       </div>
     </div>
@@ -314,7 +365,7 @@ onBeforeUnmount(() => {
 .choices {
   display: grid;
   gap: 14px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .choice-btn {
@@ -338,37 +389,46 @@ onBeforeUnmount(() => {
   background: #2563eb;
 }
 
+.choice-btn.correct {
+  background: #16a34a;
+}
+
+.choice-btn.wrong {
+  background: #dc2626;
+}
+
+.choice-btn.disabled {
+  background: #475569;
+  opacity: 0.7;
+}
+
+.feedback {
+  margin-bottom: 20px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.success-text {
+  color: #4ade80;
+}
+
+.error-text {
+  color: #f87171;
+}
+
 .actions {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 12px;
   flex-wrap: wrap;
 }
 
-.primary,
 .secondary {
   border: none;
   padding: 12px 22px;
   border-radius: 12px;
   cursor: pointer;
   font-size: 16px;
-}
-
-.primary {
-  background: #16a34a;
-  color: white;
-}
-
-.primary:hover {
-  background: #15803d;
-}
-
-.primary:disabled {
-  background: #64748b;
-  cursor: not-allowed;
-}
-
-.secondary {
   background: #475569;
   color: white;
 }
