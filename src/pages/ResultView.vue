@@ -1,7 +1,11 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
+import { computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 const router = useRouter()
+const route = useRoute()
+
+const score = computed(() => Number(route.query.score || 0))
 
 const goHome = () => {
   router.push('/')
@@ -12,7 +16,7 @@ const goHome = () => {
   <div class="page">
     <div class="card">
       <h1>Result Page</h1>
-      <p>This is the result page. Later we will show the final score here.</p>
+      <p>Your score is: <strong>{{ score }}</strong></p>
       <button @click="goHome">Play Again</button>
     </div>
   </div>
@@ -46,6 +50,7 @@ h1 {
 p {
   margin-bottom: 24px;
   color: #d1d5db;
+  font-size: 18px;
 }
 
 button {
