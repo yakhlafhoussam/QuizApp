@@ -6,39 +6,82 @@ import type { Question } from '../types/quiz'
 
 const router = useRouter()
 
-const questions = allQuestions as Question[]
+const allQuizQuestions = allQuestions as Question[]
 
+const currentLevel = ref(1)
 const currentQuestionIndex = ref(0)
-const score = ref(0)
+const totalScore = ref(0)
+const levelScore = ref(0)
 const selectedAnswer = ref<string | null>(null)
 
-const currentQuestion = computed(() => questions[currentQuestionIndex.value])
+const passingScores: Record<number, number> = {
+  1: 40,
+  2: 60,
+  3: 80,
+}
+
+const levelQuestions = computed(() =>
+  allQuizQuestions.filter((question) => question.level === currentLevel.value)
+)
+
+const currentQuestion = computed(() => levelQuestions.value[currentQuestionIndex.value])
 
 const progress = computed(() => {
-  return ((currentQuestionIndex.value + 1) / questions.length) * 100
+  if (levelQuestions.value.length === 0) return 0
+  return ((currentQuestionIndex.value + 1) / levelQuestions.value.length) * 100
 })
 
 const selectAnswer = (choice: string) => {
   selectedAnswer.value = choice
 }
 
-const nextQuestion = () => {
-  if (!selectedAnswer.value) return
+const finishLevel = () => {
+  const requiredScore = passingScores[currentLevel.value]
 
-  if (selectedAnswer.value === currentQuestion.value.correct_answer) {
-    score.value += 20
-  }
-
-  if (currentQuestionIndex.value < questions.length - 1) {
-    currentQuestionIndex.value++
-    selectedAnswer.value = null
-  } else {
+  if (levelScore.value < requiredScore) {
     router.push({
       path: '/result',
       query: {
-        score: score.value.toString(),
+        status: 'lose',
+        totalScore: totalScore.value.toString(),
+        level: currentLevel.value.toString(),
+        levelScore: levelScore.value.toString(),
+        requiredScore: requiredScore.toString(),
       },
     })
+    return
+  }
+
+  if (currentLevel.value === 3) {
+    router.push({
+      path: '/result',
+      query: {
+        status: 'win',
+        totalScore: totalScore.value.toString(),
+      },
+    })
+    return
+  }
+
+  currentLevel.value++
+  currentQuestionIndex.value = 0
+  levelScore.value = 0
+  selectedAnswer.value = null
+}
+
+const nextQuestion = () => {
+  if (!selectedAnswer.value || !currentQuestion.value) return
+
+  if (selectedAnswer.value === currentQuestion.value.correct_answer) {
+    totalScore.value += 20
+    levelScore.value += 20
+  }
+
+  if (currentQuestionIndex.value < levelQuestions.value.length - 1) {
+    currentQuestionIndex.value++
+    selectedAnswer.value = null
+  } else {
+    finishLevel()
   }
 }
 
@@ -52,12 +95,16 @@ const goHome = () => {
     <div class="quiz-container">
       <div class="top-bar">
         <div>
-          <h1>Quiz</h1>
-          <p>Question {{ currentQuestionIndex + 1 }} / {{ questions.length }}</p>
+          <h1>Level {{ currentLevel }}</h1>
+          <p>Question {{ currentQuestionIndex + 1 }} / {{ levelQuestions.length }}</p>
+          <p class="level-rule">
+            Required score for this level: {{ passingScores[currentLevel] }}/100
+          </p>
         </div>
 
-        <div class="score-box">
-          Score: {{ score }}
+        <div class="score-wrapper">
+          <div class="score-box">Total Score: {{ totalScore }}</div>
+          <div class="score-box">Level Score: {{ levelScore }}</div>
         </div>
       </div>
 
@@ -65,7 +112,7 @@ const goHome = () => {
         <div class="progress-bar" :style="{ width: `${progress}%` }"></div>
       </div>
 
-      <div class="question-card">
+      <div v-if="currentQuestion" class="question-card">
         <h2>{{ currentQuestion.question }}</h2>
 
         <div class="choices">
@@ -82,7 +129,7 @@ const goHome = () => {
         <div class="actions">
           <button class="secondary" @click="goHome">Back Home</button>
           <button class="primary" @click="nextQuestion" :disabled="!selectedAnswer">
-            {{ currentQuestionIndex === questions.length - 1 ? 'Finish' : 'Next' }}
+            {{ currentQuestionIndex === levelQuestions.length - 1 ? 'Finish Level' : 'Next' }}
           </button>
         </div>
       </div>
@@ -99,7 +146,7 @@ const goHome = () => {
 }
 
 .quiz-container {
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
   padding-top: 40px;
 }
@@ -108,7 +155,7 @@ const goHome = () => {
   display: flex;
   justify-content: space-between;
   gap: 16px;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 20px;
   flex-wrap: wrap;
 }
@@ -120,6 +167,18 @@ const goHome = () => {
 
 .top-bar p {
   color: #cbd5e1;
+  margin-bottom: 6px;
+}
+
+.level-rule {
+  color: #93c5fd;
+  font-weight: 600;
+}
+
+.score-wrapper {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .score-box {
