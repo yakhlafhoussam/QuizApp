@@ -12,9 +12,20 @@ const startQuiz = () => {
 <template>
   <div class="page">
     <div class="card">
-      <h1>Quiz App</h1>
-      <p>Welcome to the quiz game built with Vue 3 and TypeScript.</p>
-      <button @click="startQuiz">Start</button>
+      <p class="badge">Vue 3 + TypeScript Quiz</p>
+      <h1>Challenge Your Knowledge</h1>
+      <p class="description">
+        Pass 3 progressive levels, answer 5 questions per level, and finish before the timer ends.
+      </p>
+
+      <div class="rules">
+        <div class="rule-item">Level 1: minimum 40/100</div>
+        <div class="rule-item">Level 2: minimum 60/100</div>
+        <div class="rule-item">Level 3: minimum 80/100</div>
+        <div class="rule-item">Global timer: 5 minutes</div>
+      </div>
+
+      <button @click="startQuiz">Start Quiz</button>
     </div>
   </div>
 </template>
@@ -25,39 +36,65 @@ const startQuiz = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #0f172a;
+  background: linear-gradient(135deg, #020617, #0f172a);
   color: white;
   padding: 20px;
 }
 
 .card {
-  background: #1e293b;
-  padding: 32px;
-  border-radius: 16px;
+  background: rgba(30, 41, 59, 0.95);
+  padding: 36px;
+  border-radius: 20px;
   width: 100%;
-  max-width: 500px;
+  max-width: 620px;
   text-align: center;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+.badge {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #1d4ed8;
+  font-size: 14px;
+  margin-bottom: 18px;
 }
 
 h1 {
-  margin-bottom: 12px;
-  font-size: 32px;
+  margin-bottom: 14px;
+  font-size: 40px;
+  line-height: 1.2;
 }
 
-p {
+.description {
   margin-bottom: 24px;
   color: #cbd5e1;
+  font-size: 17px;
+}
+
+.rules {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 28px;
+  text-align: left;
+}
+
+.rule-item {
+  background: #334155;
+  padding: 14px 16px;
+  border-radius: 12px;
+  color: #e2e8f0;
 }
 
 button {
   background: #2563eb;
   color: white;
   border: none;
-  padding: 12px 24px;
-  border-radius: 10px;
+  padding: 14px 28px;
+  border-radius: 12px;
   cursor: pointer;
   font-size: 16px;
+  font-weight: 600;
 }
 
 button:hover {

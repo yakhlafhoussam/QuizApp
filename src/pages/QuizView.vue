@@ -3,6 +3,8 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import allQuestions from '../data/questions.json'
 import type { Question } from '../types/quiz'
+import correctSoundFile from '../assets/sounds/correct.mp3'
+import wrongSoundFile from '../assets/sounds/wrong.mp3'
 
 const router = useRouter()
 
@@ -22,6 +24,9 @@ const isCorrect = ref<boolean | null>(null)
 const timeLeft = ref(300)
 let timer: number | null = null
 let nextQuestionTimeout: number | null = null
+
+const correctAudio = new Audio(correctSoundFile)
+const wrongAudio = new Audio(wrongSoundFile)
 
 const passingScores: Record<number, number> = {
   1: 40,
@@ -74,6 +79,12 @@ const loadState = () => {
 
 const clearState = () => {
   localStorage.removeItem(STORAGE_KEY)
+}
+
+const playSound = (type: 'correct' | 'wrong') => {
+  const audio = type === 'correct' ? correctAudio : wrongAudio
+  audio.currentTime = 0
+  audio.play().catch(() => {})
 }
 
 const startTimer = () => {
@@ -166,6 +177,9 @@ const selectAnswer = (choice: string) => {
   if (correct) {
     totalScore.value += 20
     levelScore.value += 20
+    playSound('correct')
+  } else {
+    playSound('wrong')
   }
 
   nextQuestionTimeout = window.setTimeout(() => {

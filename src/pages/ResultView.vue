@@ -38,13 +38,13 @@ const goHome = () => {
 
       <template v-else-if="status === 'timeout'">
         <p class="details-text">
-          Time is over before completing all levels.
+          The time expired before finishing all levels.
         </p>
       </template>
 
       <template v-else>
         <p class="details-text">
-          Congratulations! You passed all 3 levels successfully.
+          Excellent work. You passed all 3 levels successfully.
         </p>
       </template>
 
@@ -59,58 +59,62 @@ const goHome = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #111827;
+  background: linear-gradient(135deg, #030712, #111827);
   color: white;
   padding: 20px;
 }
 
 .card {
   background: #1f2937;
-  padding: 32px;
-  border-radius: 16px;
+  padding: 36px;
+  border-radius: 20px;
   width: 100%;
-  max-width: 540px;
+  max-width: 560px;
   text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
 }
 
 .win-title {
   margin-bottom: 18px;
-  font-size: 38px;
+  font-size: 40px;
   color: #22c55e;
 }
 
 .lose-title {
   margin-bottom: 18px;
-  font-size: 38px;
+  font-size: 40px;
   color: #ef4444;
 }
 
 .timeout-title {
   margin-bottom: 18px;
-  font-size: 38px;
+  font-size: 40px;
   color: #f59e0b;
 }
 
 .score-text {
   margin-bottom: 14px;
   color: #e5e7eb;
-  font-size: 20px;
+  font-size: 22px;
 }
 
 .details-text {
   margin-bottom: 10px;
   color: #d1d5db;
   font-size: 17px;
+  line-height: 1.6;
 }
 
 button {
-  margin-top: 20px;
+  margin-top: 24px;
   background: #16a34a;
   color: white;
   border: none;
-  padding: 12px 24px;
-  border-radius: 10px;
+  padding: 14px 28px;
+  border-radius: 12px;
   cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
 }
 
 button:hover {
