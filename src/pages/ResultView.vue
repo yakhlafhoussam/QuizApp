@@ -12,6 +12,7 @@ const levelScore = computed(() => Number(route.query.levelScore || 0))
 const requiredScore = computed(() => Number(route.query.requiredScore || 0))
 
 const goHome = () => {
+  localStorage.removeItem('quiz_app_state')
   router.push('/')
 }
 </script>
